@@ -24,6 +24,7 @@ Dentro del directorio `docker/`:
 
 ```bash
 docker-compose up -d
+```
 
 📌 El archivo .env.example contiene un ejemplo de configuración.
 Renombralo a .env y adaptá los valores según tu entorno.
@@ -39,20 +40,23 @@ database/sql/create_table.sql
 
 Ejecutar el script de carga de datos, el cual lee el archivo Excel y vuelca la información en la base de datos:
 
+```bash
 cd database
 python migrar_datos.py
-
+```
 📌 Este script:
-
-    Lee ListaClubes.xlsx
-
-    Inserta confederaciones, países, regiones, ciudades, equipos y torneos
+- Lee ListaClubes.xlsx
+- Inserta confederaciones, países, regiones, ciudades, equipos y torneos
 
 4️⃣ Ejecutar la aplicación web
 
+```bash
 cd backend
 python app.py
+```
 
 La aplicación quedará disponible en:
 
+```bash
 http://localhost:5000
+```
