@@ -427,4 +427,3 @@ class SimuladorFutbol:
             raise e 
         finally:
             if self.conn: self.conn.close()
-

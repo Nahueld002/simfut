@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify
 from db import execute_query
 import sys
 import os
+import subprocess
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, '..'))
@@ -536,6 +537,41 @@ def obtener_posiciones_filtrado():
     """
     data = execute_query(sql, (torneo_id, anio))
     return jsonify({'data': data})
+
+@app.route('/api/torneos/generar_fixture', methods=['POST'])
+def generar_fixture_api():
+    data = request.json
+    torneo_id = data.get('torneo_id')
+    anio = data.get('anio')
+    
+    if not torneo_id or not anio:
+        return jsonify({'success': False, 'message': 'Faltan datos (ID o Año).'})
+
+    try:
+        # Construimos la ruta al script 'generar_fixture.py'
+        # Asumiendo que está en la carpeta 'database' como en tu estructura anterior
+        script_path = os.path.join(DATABASE_DIR, 'generar_fixture.py')
+        
+        # Ejecutamos el script usando subprocess
+        # Pasamos --replace para que borre datos viejos si existen
+        result = subprocess.run(
+            [sys.executable, script_path, '--torneo', str(torneo_id), '--anio', str(anio), '--replace'],
+            capture_output=True,
+            text=True
+        )
+
+        # Verificamos si el script terminó con éxito (código 0)
+        if result.returncode == 0:
+            print(f"✅ Fixture generado. Output:\n{result.stdout}")
+            return jsonify({'success': True, 'message': 'Fixture generado correctamente.'})
+        else:
+            print(f"❌ Error en script:\n{result.stderr}")
+            # Devolvemos el error que dio el script para poder depurar
+            return jsonify({'success': False, 'message': f"Error interno del motor: {result.stderr}"})
+
+    except Exception as e:
+        print(f"Excepción en API: {e}")
+        return jsonify({'success': False, 'message': str(e)})
 # ==========================================
 
 # ==========================================

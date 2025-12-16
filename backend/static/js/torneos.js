@@ -363,3 +363,60 @@ function simularFechas() {
         lucide.createIcons();
     });
 }
+
+// --- NUEVA FUNCIÓN: GENERAR FIXTURE ---
+function generarFixture() {
+    const torneoId = document.getElementById("hdnTorneoID").value;
+    const anio = document.getElementById("selectAnio").value;
+    const nombreTorneo = document.getElementById("tituloTorneo").innerText;
+
+    // Validación básica
+    if (!torneoId) {
+        alert("Error: No se ha seleccionado un torneo.");
+        return;
+    }
+
+    // Confirmación de seguridad
+    if (!confirm(`⚠️ ATENCIÓN ⚠️\n\nEstás a punto de generar el fixture para:\n» ${nombreTorneo} (${anio})\n\nSi ya existen partidos cargados para este año, SE BORRARÁN y se reemplazarán por nuevos.\n\n¿Deseas continuar?`)) {
+        return;
+    }
+
+    // Feedback visual de carga (Spinner)
+    const container = document.getElementById("contenedorFechas");
+    container.innerHTML = `
+        <div class="text-center py-12 bg-gray-800/50 rounded-xl border border-gray-700 border-dashed">
+            <i data-lucide="loader-2" class="w-10 h-10 animate-spin mx-auto text-indigo-500 mb-3"></i>
+            <h4 class="text-white font-bold">Generando Partidos...</h4>
+            <p class="text-gray-400 text-sm mt-1">El motor está calculando los cruces y fechas.</p>
+        </div>
+    `;
+    lucide.createIcons();
+
+    // Llamada al Backend
+    fetch('/api/torneos/generar_fixture', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+            torneo_id: torneoId, 
+            anio: anio 
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            // Si sale bien, recargamos la lista para mostrar los partidos nuevos
+            cargarPartidos(); 
+            // Opcional: Mostrar mensaje de éxito
+            // alert("✅ Fixture generado exitosamente.");
+        } else {
+            alert("❌ Ocurrió un error: " + data.message);
+            // Restaurar vista vacía o anterior si falló
+            cargarPartidos(); 
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Error de conexión con el servidor.");
+        container.innerHTML = '<p class="text-red-500 text-center py-4">Error de conexión.</p>';
+    });
+}
