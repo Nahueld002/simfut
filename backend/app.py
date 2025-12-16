@@ -3,13 +3,19 @@ from db import execute_query
 import sys
 import os
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'script')))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, '..'))
+DATABASE_DIR = os.path.join(PROJECT_ROOT, 'database')
+
+sys.path.append(DATABASE_DIR)
+
 try:
     from simulador_elo import SimuladorFutbol
 except ImportError:
     print("Advertencia: No se encontró 'simulador_elo.py', la simulación no funcionará.")
 
 app = Flask(__name__)
+
 
 # ==========================================
 # Home 

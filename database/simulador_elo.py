@@ -1,13 +1,15 @@
 import random
 import math
-import sys
 import os
+import sys
 
-current_dir = os.path.dirname(os.path.abspath(__file__))
-parent_dir = os.path.abspath(os.path.join(current_dir, '..'))
-sys.path.append(parent_dir)
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.join(CURRENT_DIR, '..'))
+BACKEND_DIR = os.path.join(PROJECT_ROOT, 'backend')
 
-from db import get_db_connection 
+sys.path.append(BACKEND_DIR)
+
+from db import get_db_connection
 
 class SimuladorFutbol:
     def __init__(self):

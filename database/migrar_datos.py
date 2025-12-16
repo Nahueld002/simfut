@@ -1,15 +1,25 @@
+import os
 import pandas as pd
 from sqlalchemy import create_engine, text
+from dotenv import load_dotenv
 
-DB_USER = 'nahuel'
-DB_PASS = 'nahuel123'
-DB_HOST = 'localhost'
-DB_PORT = '5432'
-DB_NAME = 'sgbda_db'
-EXCEL_FILE = 'ListaClubes.xlsx' 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+ENV_PATH = os.path.join(BASE_DIR, '..', 'docker', '.env')
 
-connection_str = f'postgresql+psycopg2://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
-engine = create_engine(connection_str)
+load_dotenv(ENV_PATH)
+
+DB_USER = os.getenv('POSTGRES_USER')
+DB_PASS = os.getenv('POSTGRES_PASSWORD')
+DB_HOST = os.getenv('POSTGRES_HOST')
+DB_PORT = os.getenv('POSTGRES_PORT')
+DB_NAME = os.getenv('POSTGRES_DB')
+EXCEL_FILE = os.path.join(BASE_DIR, 'sql', 'ListaClubes.xlsx')
+
+
+engine = create_engine(
+    f'postgresql+psycopg2://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+)
+
 
 def obtener_mapa_ids(tabla, campo_nombre, campo_id):
     """Descarga la tabla de la BD y crea un diccionario { 'Nombre': ID }"""
