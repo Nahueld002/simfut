@@ -14,12 +14,6 @@ de torneos de fútbol utilizando un sistema de ranking **ELO**.
 - database/: scripts SQL y simulación
 - docker/: docker de postgresql y ejemplo de .env
 
-## ▶️ Ejecución
-```bash
-cd backend
-python app.py
-
-
 ---
 
 ## ▶️ Ejecución del proyecto
