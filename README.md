@@ -12,6 +12,7 @@ de torneos de fútbol utilizando un sistema de ranking **ELO**.
 ## 📂 Estructura
 - backend/: aplicación web
 - database/: scripts SQL y simulación
+- docker/: docker de postgresql y ejemplo de .env
 
 ## ▶️ Ejecución
 ```bash
