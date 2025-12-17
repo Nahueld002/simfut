@@ -21,9 +21,7 @@ if BACKEND_DIR not in sys.path:
 
 from db import get_db_connection
 
-# ===========================
-# Config por torneo
-# ===========================
+
 TORNEO_FORMATOS = {
     # 2, 3: 12 equipos, 2 ruedas
     2: {"mode": "liga", "rounds": 2},
@@ -39,9 +37,7 @@ TORNEO_FORMATOS = {
 }
 
 
-# ===========================
-# Model
-# ===========================
+
 @dataclass(frozen=True)
 class Match:
     local_te_id: int
@@ -51,9 +47,6 @@ class Match:
     grupo: Optional[str]
 
 
-# ===========================
-# Generators
-# ===========================
 def round_robin_circle_one_round(team_ids: List[int], seed: Optional[int] = None) -> List[Tuple[int, int, int]]:
     if len(team_ids) < 2:
         raise ValueError("Se requieren al menos 2 participantes para generar liga.")
@@ -119,9 +112,7 @@ def round_robin_multi_rounds(team_ids: List[int], rounds_count: int, seed: Optio
     return all_fx
 
 
-# ===========================
-# DB helpers
-# ===========================
+
 def fetch_torneo(conn, torneoid: int) -> Dict:
     with conn.cursor() as cur:
         cur.execute("SELECT torneoid, nombre, tipotorneo, categoria, estado FROM torneo WHERE torneoid=%s", (torneoid,))
@@ -147,17 +138,7 @@ def fetch_participantes_raw(conn, torneoid: int, anio: int) -> List[Dict]:
 
 
 def reset_tournament_data(conn, torneoid: int, anio: int) -> int:
-    """
-    Borra todo rastro de la simulación de este torneo/año:
-    1. Revierte ELO en tabla equipo (usando el eloanterior del primer partido jugado).
-    2. Borra logelo.
-    3. Borra tablaposiciones.
-    4. Borra palmares y resultados.
-    5. Borra partidos.
-    """
     with conn.cursor() as cur:
-        # 1. Revertir ELO de equipos al estado inicial
-        # Buscamos el PRIMER registro de logelo (menor logid) para cada equipo en este torneo
         cur.execute("""
             SELECT DISTINCT ON (l.equipoid) l.equipoid, l.eloanterior
             FROM logelo l
@@ -169,27 +150,22 @@ def reset_tournament_data(conn, torneoid: int, anio: int) -> int:
         
         reverted_count = 0
         for r in rollbacks:
-            # r[0]=equipoid, r[1]=eloanterior
             cur.execute("UPDATE equipo SET elo = %s WHERE equipoid = %s", (r[1], r[0]))
             reverted_count += 1
         
         if reverted_count > 0:
             print(f"   -> ELO revertido para {reverted_count} equipos a su estado original.")
 
-        # 2. Borrar logs de ELO asociados a este torneo
         cur.execute("""
             DELETE FROM logelo 
             WHERE partidoid IN (SELECT partidoid FROM partido WHERE torneoid=%s AND anioparticipacion=%s)
         """, (torneoid, anio))
 
-        # 3. Borrar tabla de posiciones
         cur.execute("DELETE FROM tablaposiciones WHERE torneoid=%s AND anioparticipacion=%s", (torneoid, anio))
 
-        # 4. Borrar resultados finales y palmares (si hubo campeón)
         cur.execute("DELETE FROM torneoresultados WHERE torneoid=%s AND aniotorneo=%s", (torneoid, anio))
         cur.execute("DELETE FROM palmares WHERE torneoid=%s AND aniotitulo=%s", (torneoid, anio))
 
-        # 5. Finalmente, borrar los partidos
         cur.execute("DELETE FROM partido WHERE torneoid=%s AND anioparticipacion=%s", (torneoid, anio))
         
         return cur.rowcount
@@ -204,8 +180,8 @@ def insert_partidos(conn, torneoid: int, anio: int, matches: List[Match]) -> int
             torneoid,
             m.local_te_id,
             m.visita_te_id,
-            None,  # goleslocal
-            None,  # golesvisitante
+            None,  
+            None,  
             m.nrofecha,
             anio,
             m.fase,
@@ -268,9 +244,6 @@ def standings_top2_by_group(conn, torneoid: int, anio: int) -> Dict[str, List[in
     return out
 
 
-# ===========================
-# Builders por formato
-# ===========================
 def build_liga_matches(participantes: List[int], rounds_count: int, fase: Optional[str], grupo: Optional[str], seed: Optional[int]) -> List[Match]:
     rr = round_robin_multi_rounds(participantes, rounds_count=rounds_count, seed=seed)
     return [Match(local, visita, nrofecha, fase, grupo) for (local, visita, nrofecha) in rr]
@@ -338,9 +311,6 @@ def build_torneo6_matches(conn, torneoid: int, anio: int, participantes_rows: Li
     return all_matches
 
 
-# ===========================
-# Main
-# ===========================
 def main():
     parser = argparse.ArgumentParser(
         description="Generador de fixture (partido) basado en torneoequipo y formatos por torneoid.",
@@ -410,7 +380,6 @@ def main():
 
         deleted_matches_count = 0
         if args.replace:
-            # AQUÍ LLAMAMOS A LA NUEVA FUNCIÓN DE RESET COMPLETO
             deleted_matches_count = reset_tournament_data(conn, args.torneo, args.anio)
 
         inserted = insert_partidos(conn, args.torneo, args.anio, matches)

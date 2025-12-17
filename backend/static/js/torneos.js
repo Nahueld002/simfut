@@ -364,19 +364,15 @@ function simularFechas() {
     });
 }
 
-// --- NUEVA FUNCIÓN: GENERAR FIXTURE ---
 function generarFixture() {
     const torneoId = document.getElementById("hdnTorneoID").value;
     const anio = document.getElementById("selectAnio").value;
     const nombreTorneo = document.getElementById("tituloTorneo").innerText;
-
-    // Validación básica
     if (!torneoId) {
         alert("Error: No se ha seleccionado un torneo.");
         return;
     }
 
-    // Confirmación de seguridad
     if (!confirm(`⚠️ ATENCIÓN ⚠️\n\nEstás a punto de generar el fixture para:\n» ${nombreTorneo} (${anio})\n\nSi ya existen partidos cargados para este año, SE BORRARÁN y se reemplazarán por nuevos.\n\n¿Deseas continuar?`)) {
         return;
     }
@@ -392,7 +388,6 @@ function generarFixture() {
     `;
     lucide.createIcons();
 
-    // Llamada al Backend
     fetch('/api/torneos/generar_fixture', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -404,13 +399,9 @@ function generarFixture() {
     .then(r => r.json())
     .then(data => {
         if (data.success) {
-            // Si sale bien, recargamos la lista para mostrar los partidos nuevos
             cargarPartidos(); 
-            // Opcional: Mostrar mensaje de éxito
-            // alert("✅ Fixture generado exitosamente.");
         } else {
             alert("❌ Ocurrió un error: " + data.message);
-            // Restaurar vista vacía o anterior si falló
             cargarPartidos(); 
         }
     })
